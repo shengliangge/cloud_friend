@@ -20,8 +20,10 @@ public class BubbleSort {
                 flag = false;
             }
         }
+        System.out.println("排序后");
         for (int i : arr) {
             System.out.println(i);
         }
+
     }
 }
