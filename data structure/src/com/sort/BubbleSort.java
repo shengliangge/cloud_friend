@@ -4,6 +4,11 @@ public class BubbleSort {
     public static void main(String[] args) {
         int temp = 0;
         int[] arr = {3, 9, -1, 10, -2};
+        System.out.println("初始状态");
+        for (int i : arr) {
+            System.out.print(i+" ");
+        }
+        System.out.println("");
         boolean flag = false;
         for (int i = 0; i < arr.length - 1; i++) {
             for (int j = 0; j < arr.length - 1 - i; j++) {
@@ -22,7 +27,7 @@ public class BubbleSort {
         }
         System.out.println("排序后");
         for (int i : arr) {
-            System.out.println(i);
+            System.out.print(i+" ");
         }
 
     }
