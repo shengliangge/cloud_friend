@@ -13,16 +13,16 @@ public class ShellSort {
         //外层循环，按照分组的数量来进行循环(10/2)循环5次
         for (int step = arr.length / 2; step > 0; step /= 2) {
             //二层循环，根据分组后，有多少组就循环多少次。
-//            for(int i=step;i<;i-=5){
+            for(int i=step;i<arr.length;i++){
 //            三层循环，按照每个分组的组内数量来做比较
-            for (int j = step; j + step < arr.length; j++) {
+            for (int j =i-step; j >=0; j-=step) {
                 if (arr[j] > arr[j + step]) {
                     int temp = arr[j];
                     arr[j] = arr[j + step];
                     arr[j + step] = temp;
                 }
             }
-//            }
+            }
             System.out.println("第" + step + "次循环:");
             for (int i : arr) {
                 System.out.print(i);
