@@ -30,13 +30,13 @@ public class InsertSort {
 
     //实现思路2,优化版
     public static int[] insertSort2(int[] arr) {
-        int insertValue=0;
-        int insertIndex=0;
+        int insertValue=0;//插入值
+        int insertIndex=0;//插入下标
         for (int i = 1; i < arr.length; i++) {
            insertValue = arr[i];//待插入的值
             insertIndex = i - 1;
             while (insertIndex >= 0 && arr[insertIndex] > insertValue) {
-                arr[insertIndex + 1] = arr[insertIndex];//将前一个向后移动以为
+                arr[insertIndex + 1] = arr[insertIndex];//将前一个向后移动一位
                 insertIndex--;
             }
             //结束循环时，找到了要插入的位置的前一个位置，并且已经将其他的数后移
