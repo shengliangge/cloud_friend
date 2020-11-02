@@ -65,13 +65,14 @@
 						// 本地存储用户信息
 						try {
 							uni.setStorageSync('user', res.userData)
+								uni.setStorageSync('token', res.userData.token)
 						} catch (e) {
 							console.log('数据存储出错')
 						}
 						this.toIndex()
 					} else {
 						wx.showToast({
-							title: res.data.msg,
+							title: res.msg,
 							icon: "none"
 						});
 						return;

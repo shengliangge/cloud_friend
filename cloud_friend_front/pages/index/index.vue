@@ -72,7 +72,7 @@
 				try {
 					const user = uni.getStorageSync('user');
 					if (user) {
-						user.imgUrl = this.$api.baseURL + /user/ + user.imgUrl
+						// user.imgUrl = this.$api.baseURL + /user/ + user.imgUrl
 						this.user = user
 					} else {
 						//如果没有缓存信息，就跳去登录页面
@@ -80,6 +80,7 @@
 					}
 				} catch (e) {
 					console.log(e)
+					this.toLogin()
 				}
 			},
 			// 跳转用户详情
@@ -96,7 +97,6 @@
 			},
 			// 跳转用户主页
 			toUserHome() {
-				console.log(555)
 				uni.navigateTo({
 					url: "/pages/userHome/userHome?uid=" + this.user.id,
 				});

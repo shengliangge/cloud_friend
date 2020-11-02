@@ -6,30 +6,31 @@
 			</view>
 			<view class="top-bar-center"></view>
 			<view class="top-bar-right">
-				<view class="more-img">
+				<view class="more-img" @tap="toUserDetail">
 					<image src="../../static/images/userhome/more.png"></image>
 				</view>
 			</view>
 		</view>
 		<view class="bg">
 			<view class="bg-bai" :animation="animationData4"></view>
-			<image src="../../static/images/img/three.png" class="bg-img" mode="aspectFill"></image>
+			<image :src="user.imgUrl" class="bg-img" mode="aspectFill"></image>
 		</view>
 		<view class="main">
 			<view class="user-header">
-				<view class="sex" :style="{background:sexBg}" :animation="animationData3">
-					<image src="../../static/images/userhome/female.png"></image>
+				<view class="sex" :style="{background:sexBg[user.sex]}" :animation="animationData3">
+					<image :src="seximg[user.sex]"></image>
 				</view>
-				<image src="../../static/images/img/three.png" mode="aspectFill" class="user-img" :animation="animationData2"></image>
+				<image :src="user.imgUrl" mode="aspectFill" class="user-img" :animation="animationData2"></image>
 			</view>
 			<view class="user-imf">
-				<view class="name">{{user.name}}</view>
-				<view class="nick">昵称：{{user.nick}}</view>
-				<view class="intr">{{user.intr}}</view>
+				<view class="name">{{user.nickname}}</view>
+				<view class="nick">邮箱：{{user.email}}</view>
+				<view class="intr">{{user.explain}}</view>
 			</view>
 		</view>
-		<view class="bottom-bar">
-			<view class="bottom-btn btn1" @tap="addFriendAnimat">加为好友</view>
+		<view class="bottom-bar" v-show="relation!==0">
+			<view class="bottom-btn btn1" @tap="addFriendAnimat" v-if="relation==1">发送消息</view>
+			<view class="bottom-btn btn1" @tap="addFriendAnimat" v-else="relation==2">加为好友</view>
 		</view>
 		<view class="add-misg" :style="{height:addHeight+'px',bottom:-+addHeight+'px'}" :animation="animationData">
 			<view class="name">{{user.name}}</view>
@@ -46,9 +47,12 @@
 	export default {
 		data() {
 			return {
-				user: {},
 				uid: '',
-				sexBg: 'rgba(255,93,91,1)', //性别颜色
+				sexBg: {
+					'female': 'rgba(255,93,91,1)',
+					'male': 'rgba(87,153,255,1)',
+					'asexual': 'rgba(39,40,50,1)',
+				}, //性别颜色
 				addHeight: '', //add版块高度
 				animationData: {}, //动画
 				animationData1: {}, //动画
@@ -58,10 +62,18 @@
 				isAdd: false,
 				myname: '春雨',
 				user: {
-					name: '秋风',
-					nick: '丘之国',
-					intr: '逸刻时光，做美好的自己。逸刻时光，做美好的自己。逸刻时光，做美好的自己。逸刻时光，做美好的自己。逸刻时光，做美好的自己。'
-				}
+					nickname: '',
+					email: '',
+					imgUrl: '',
+					explain: ''
+				},
+				userInfo: {},
+				seximg: {
+					'female': '../../static/images/userhome/female.png',
+					'male': '../../static/images/userhome/male.png',
+					'asexual': '../../static/images/userhome/asexual.png',
+				},
+				relation: 0 //判断是否是好友
 			};
 		},
 		onLoad(e) {
@@ -75,10 +87,9 @@
 			//获取本地缓存用户信息
 			getStorages() {
 				try {
-					const user = uni.getStorageSync('user');
-					if (user) {
-						user.imgUrl = this.$api.baseURL + /user/ + user.imgUrl
-						this.user = user
+					const userInfo = uni.getStorageSync('user');
+					if (userInfo) {
+						this.userInfo = userInfo
 						this.getUserInfo();
 					} else {
 						//如果没有缓存信息，就跳去登录页面
@@ -86,21 +97,54 @@
 					}
 				} catch (e) {
 					console.log(e)
+					this.toLogin()
 				}
 			},
 			//获取用户信息
 			getUserInfo() {
-				// if (this.uid == this.user.id) {
-				console.log('获取用户信息')
-				console.log(this.user)
 				this.$api.getDetail({
-					id:this.uid,
-					token:this.user.token
-				},this.user.token).then(res=>{
-					console.log(res)
+					id: this.uid
+				}).then(res => {
+					if (res.code == 200) { //请求成功
+						let user = {}
+						// res.result.imgUrl = this.$api.baseURL + '/user/' + res.result.imgUrl
+						console.log(res)
+						this.user = res.result
+						this.isFriend()
+					} else {
+						wx.showToast({
+							title: "网络出现问题，请稍后再试",
+							icon: "none"
+						});
+					}
+
 				})
-				// }
-				
+			},
+			//判断好友关系
+			isFriend() {
+				let userInfoId = this.userInfo.id
+				let fid = this.uid
+				if (userInfoId === fid) { //是自己，不显示添加好友关系
+					this.relation = 0
+				} else { //如果是好友，也不显示
+					this.$api.isFriend({
+						uid: userInfoId,
+						fid: fid,
+						state: 0
+					}).then(res => {
+						console.log(res)
+						if (res.code == 200) { //是好友，查找成功
+							this.relation = 1
+						} else if (res.code == 400) { //不是好友
+							this.relation = 2
+						} else {
+							wx.showToast({
+								title: "网络出现问题，请稍后再试",
+								icon: "none"
+							});
+						}
+					})
+				}
 			},
 			// 发送好友申请
 			sendFriend() {
@@ -116,6 +160,16 @@
 						console.log(data)
 					}
 				})
+			},
+			toLogin() {
+				uni.redirectTo({
+					url: "/pages/login/login",
+				});
+			},
+			toUserDetail() {
+				uni.redirectTo({
+					url: "/pages/userDetails/userDetails",
+				});
 			},
 			//返回登录页面
 			backOne: function() {

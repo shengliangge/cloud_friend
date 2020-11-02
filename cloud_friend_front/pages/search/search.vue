@@ -4,7 +4,7 @@
 		<view slot="gBody">
 			<!-- 搜索组件宽度自适应于外层 -->
 			<view style="padding:25rpx 50rpx; background:#F5F6F7">
-				<graceSearch @inputting="inputting" @confirm="confirm" :kwd="searchKey"></graceSearch>
+				<graceSearch @inputting="inputting" :kwd="searchKey"></graceSearch>
 			</view>
 			<view class="grace-body">
 				<view v-if="searchKeyHistory.length > 0">
@@ -18,27 +18,21 @@
 					</view>
 				</view>
 			</view>
-			
+
 			<view class="main">
 				<view class="search-user result">
 					<view class="title">用户</view>
-					<view class="list user">
-						<image src="../../static/images/img/four.png"></image>
-						<view class="names">
-							<view class="name">名字</view>
-							<view class="email">850110183@qq.com</view>
+					<view v-for="(item,index) in searchInfo" :key="index">
+						<view class="list user">
+							<image :src="item.imgUrl"></image>
+							<view class="names">
+								<view class="name">{{item.nickname}}</view>
+								<view class="email">{{item.email}}</view>
+							</view>
+							<view class="right-bt send">发消息</view>
+							<!-- <view class="right-bt add" @click="toUserHome">加好友</view> -->
 						</view>
-						<view class="right-bt send" >发消息</view>
 					</view>
-					<view class="list user">
-						<image src="../../static/images/img/four.png"></image>
-						<view class="names">
-							<view class="name">非好友名</view>
-							<view class="email">850110183@qq.com</view>
-						</view>
-						<view class="right-bt add" @click="toUserHome">加好友</view>
-					</view>
-	
 				</view>
 			</view>
 		</view>
@@ -47,48 +41,71 @@
 <script>
 	import gracePage from "../../graceUI/components/gracePage.vue";
 	import graceSearch from "../../graceUI/components/graceSearch.vue";
+	import myfun from '../../commons/js/myfun.js'
 	export default {
 		data() {
 			return {
 				searchKey: "",
-				searchKeyHistory: ['盛良', '850110183@qq.com', '关键字', '类型',]
+				searchKeyHistory: ['盛良', '850110183@qq.com', '关键字', '类型', ],
+				searchInfo: []
 			}
 		},
 		onLoad: function() {},
 		methods: {
-			
-			toUserHome(){
+
+			toUserHome() {
 				uni.navigateTo({
 					url: "/pages/userHome/userHome",
 				});
 			},
-			inputting: function(e) {
-				console.log(e);
-			},
-			confirm: function(e) {
-				console.log(e);
-				uni.request({
-					url: 'http://127.0.0.1:3000/user/searchUser',
-					data: {
-						keyword: e
-					},
-					method: 'POST',
-					success: (res) => {
-						console.log(res)
-						// if (res.data.code == 200) { //登录成功
-						// 	this.toIndex()
-						// } else {
-						// 	wx.showToast({
-						// 		title: res.data.msg,
-						// 		icon: "none"
-						// 	});
-						// 	return;
-						// }
-					}
-				})
-			},
+			inputting: myfun.Debounce(function(e) {
+				if (e.trim().length > 0) { //发起接口请求
+					this.$api.searchUser({
+						keyword: e.trim()
+					}).then(res => {
+						if (res.code == 200) {
+							const searchInfo = res.result
+							for (let searchOne of searchInfo) {
+								let id = searchOne._id
+								isFriend(id)
+							}
+						} else {
+							wx.showToast({
+								title: "网络出现问题，请稍后再试",
+								icon: "none"
+							});
+						}
+					})
+				}
+			}),
+			// //判断好友关系
+			// isFriend(id) {
+			// 	let userInfoId = this.userInfo.id
+			// 	let fid = this.uid
+			// 	if (userInfoId === fid) { //是自己，不显示添加好友关系
+			// 		this.relation = 0
+			// 	} else { //如果是好友，也不显示
+			// 		this.$api.isFriend({
+			// 			uid: userInfoId,
+			// 			fid: fid,
+			// 			state: 0
+			// 		}).then(res => {
+			// 			console.log(res)
+			// 			if (res.code == 200) { //是好友，查找成功
+			// 				this.relation = 1
+			// 			} else if (res.code == 400) { //不是好友
+			// 				this.relation = 2
+			// 			} else {
+			// 				wx.showToast({
+			// 					title: "网络出现问题，请稍后再试",
+			// 					icon: "none"
+			// 				});
+			// 			}
+			// 		})
+			// 	}
+			// },
 			setKey: function(e) {
-				var key = e.currentTarget.dataset.key;
+				let key = e.currentTarget.dataset.key;
 				uni.showToast({
 					title: '开始搜索 ' + key,
 					icon: "none"
