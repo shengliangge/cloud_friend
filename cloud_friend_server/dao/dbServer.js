@@ -145,20 +145,21 @@ exports.searchUser = (keyword, res) => {
 }
 
 // 判断是否为好友
-exports.isFriend = (uid, fid, res) => {
+exports.isFriend = (uid, fid, state, res) => {
   // 用户id、好友id、是否已经为好友
-  let whereStr = { 'userId': uid, "friendId": fid, 'state': 0 }
+  let whereStr = { 'userId': uid, "friendId": fid, 'friendStatus': state }
   // 寻找一条
   Friend.findOne(whereStr, (err, result) => {
     if (err) {
-      res.send({ status: 500 })
+      res.send({ code: 500,msg:'服务器错误' })
     } else {
+      console.log(result)
       if (result) {
         // 是好友
-        res.send({ status: 200 })
+        res.send({ code: 200,msg:'匹配成功' })
       } else {
         // 不是好友
-        res.send({ status: 400 })
+        res.send({ code: 400,msg:'匹配失败'  })
       }
     }
   })
@@ -211,12 +212,10 @@ exports.userDetail = (id, res) => {
   let whereStr = { '_id': id }
   let out = { 'password': 0 }
   User.findOne(whereStr, out, (err, result) => {
-    if(err){
-      res.send({code:500, err })
-
-    }else{
-
-      res.send({code:200, result })
+    if (err) {
+      res.send({ code: 500, err, "msg": "服务器错误" })
+    } else {
+      res.send({ code: 200, result, "msg": "获取成功" })
     }
   })
 }
@@ -241,7 +240,6 @@ exports.userUpdate = (data, res) => {
           }
         } else {
           //找到了，匹配密码
-
 
           console.log(bcrypt.verification(data.data, result[0].password))
           result.map((e) => {    //result是一个数组

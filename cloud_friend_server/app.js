@@ -20,8 +20,7 @@ app.use(express.static(__dirname + '/data'))
 //token白名单
 const whiteList = ['/user/login', '/user/register']
 app.use((req, res, next) => {
-	console.log(req.headers)
-	console.log(req.url)
+	// console.log(req.headers)
 	if (!whiteList.includes(req.url)) {
 		let token = req.headers.authorization
 		let tokenMatch = jwt.verifyToken(token)
@@ -33,6 +32,9 @@ app.use((req, res, next) => {
 			res.send({ code: 401, msg: 'token验证失败' })
 			return
 		}
+	} else {
+		console.log('白名单，放行')
+		next()    //白名单内，直接放行  
 	}
 })
 

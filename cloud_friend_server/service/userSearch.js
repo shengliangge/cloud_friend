@@ -11,7 +11,8 @@ exports.searchUser=(req,res)=>{
 exports.isFriend=function(req,res){
   let uid=req.body.uid;
   let fid=req.body.fid;
-  dbServer.isFriend(uid,fid,res)
+  let state=req.body.state
+  dbServer.isFriend(uid,fid,state,res)
 }
 
 
